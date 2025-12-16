@@ -55,7 +55,6 @@ def _poll_gamepad_loop():
         except Exception as e:
             # Emit an error event to clients and back off briefly
             socketio.emit('gamepad_error', {'message': str(e)})
-            sleep(0.05)
             continue
 
         for event in events:
@@ -70,32 +69,6 @@ def _poll_gamepad_loop():
             print(f"Event: {payload}")
 
             # Apply locally to virtual gamepad
-            # match event.ev_type:
-            #     case "Key":
-            #         handle_button(_gamepad, event.code, event.state == 1)
-            #     case "Absolute":
-            #         if event.code in ["ABS_X", "ABS_Y", "ABS_RX", "ABS_RY", "ABS_Z", "ABS_RZ"]:
-            #             axis_map = {
-            #                 "ABS_X": 0,
-            #                 "ABS_Y": 1,
-            #                 "ABS_RX": 2,
-            #                 "ABS_RY": 3,
-            #                 "ABS_Z": 4,
-            #                 "ABS_RZ": 5,
-            #             }
-            #             axis = axis_map[event.code]
-            #             # Normalize
-            #             if event.code in ["ABS_Z", "ABS_RZ"]:
-            #                 value = (event.state / 255.0) * 2 - 1
-            #             else:
-            #                 value = event.state / 32767.0
-            #             handle_axis(_gamepad, axis, value, current_axis_values)
-            #         elif event.code == "ABS_HAT0X":
-            #             hat_value = (event.state, 0)
-            #             handle_hat(_gamepad, hat_value)
-            #         elif event.code == "ABS_HAT0Y":
-            #             hat_value = (0, event.state * -1)
-            #             handle_hat(_gamepad, hat_value)
 
             # Forward to peer server, if configured and connected
             print(f"Peer connected: {_peer_client.connected} {PEER_URL}")
@@ -243,6 +216,11 @@ if __name__ == '__main__':
                 _peer_client.emit('server_hello', {'server_id': SERVER_ID})
             except Exception as e:
                 print(f"Peer connect failed at startup: {e}")
-        socketio.run(app, debug=True)
+        # socketio.run(app, debug=True)
+        ## Bind to LAN so other machines can reach this server
+        host = os.environ.get('HOST', '0.0.0.0')
+        port = int(os.environ.get('PORT', '5000'))
+        print(f"[startup] binding host={host} port={port}")
+        socketio.run(app, host=host, port=port, debug=True)
     finally:
         _stop_event.set()
