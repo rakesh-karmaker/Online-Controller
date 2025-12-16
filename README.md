@@ -21,15 +21,15 @@
         <strong>Set up environment variables:</strong><br>
         Create a <code>.env</code> file or set environment variables for server and client IP/port.<br>
         Example <code>.env</code> for server:
-        <pre>
+<pre>
 SERVER_IP=0.0.0.0
 SERVER_PORT=5000
-      </pre>
+</pre>
         Example <code>.env</code> for client:
-        <pre>
+<pre>
 REMOTE_SERVER_IP=192.168.0.101
 REMOTE_SERVER_PORT=5000
-      </pre>
+</pre>
     </li>
     <li>
         <strong>Start the server:</strong><br>
