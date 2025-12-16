@@ -4,13 +4,10 @@ import vgamepad as vg
 AXIS_EPSILON = 0.02  # ~2% movement threshold
 
 def apply_payload_to_gamepad(gamepad: vg.VX360Gamepad, payload: dict, current_axis_values: dict):
-    print(f"Applying payload: {payload}")
-    ev_type = payload.get('type')
-    code = payload.get('code')
-    state = payload.get('state')
+    ev_type, code, state = payload.split(',')
+    state = int(state)
 
     if ev_type == 'Key':
-        
         handle_button(gamepad, code, state == 1)
     elif ev_type == 'Absolute':
         if code in ["ABS_X", "ABS_Y", "ABS_RX", "ABS_RY", "ABS_Z", "ABS_RZ"]:
