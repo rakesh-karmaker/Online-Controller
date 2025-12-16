@@ -4,9 +4,28 @@ import vgamepad as vg
 AXIS_EPSILON = 0.02  # ~2% movement threshold
 
 def apply_payload_to_gamepad(gamepad: vg.VX360Gamepad, payload: dict, current_axis_values: dict):
+    print(f"[gamepad] Applying payload: {payload} | Type: {type(payload)}")
     ev_type = payload.get('type')
     code = payload.get('code')
     state = payload.get('state')
+    # Normalize types coming from JSON/socket payloads
+    try:
+        if ev_type == 'Key':
+            # Normalize common truthy/falsy representations to int 1/0
+            s = str(state).strip().lower()
+            if s in ('1', 'true', 'pressed', 'down'):
+                state = 1
+            elif s in ('0', 'false', 'released', 'up'):
+                state = 0
+            else:
+                # Fall back: any non-zero numeric becomes 1
+                state = 1 if float(s) != 0.0 else 0
+        elif ev_type == 'Absolute':
+            # Axis/triggers may arrive as strings; convert to float
+            state = float(state)
+    except Exception:
+        # If normalization fails, leave as-is
+        pass
     if ev_type == 'Key':
         handle_button(gamepad, code, state == 1)
     elif ev_type == 'Absolute':
@@ -29,6 +48,12 @@ def apply_payload_to_gamepad(gamepad: vg.VX360Gamepad, payload: dict, current_ax
             handle_hat(gamepad, (state, 0))
         elif code == "ABS_HAT0Y":
             handle_hat(gamepad, (0, state * -1))
+        else:
+            # Unknown absolute code; ignore gracefully
+            return
+    else:
+        # Unrecognized event type; ignore
+        return
 
 def handle_button(gamepad: vg.VX360Gamepad, button: str, pressed: bool):
     vg_button = {
